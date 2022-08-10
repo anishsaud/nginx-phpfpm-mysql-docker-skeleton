@@ -1,0 +1,1 @@
+# nginx-phpfpm-mysql-docker-skeleton
