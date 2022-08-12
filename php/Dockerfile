@@ -2,9 +2,16 @@ FROM php:fpm-alpine
 
 WORKDIR /srv/www
 
-ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+RUN docker-php-ext-install -j$(nproc) bcmath pdo_mysql \
+    && docker-php-ext-enable pdo_mysql bcmath
 
-RUN chmod +x /usr/local/bin/install-php-extensions \
-    && install-php-extensions @composer-2.0.2 \
-    && install-php-extensions bcmath pdo_mysql mysqli ldap 
+RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
+    && pecl install xdebug \
+    && docker-php-ext-enable xdebug \
+    && apk del -f .build-deps
+
+COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
+
+# RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
+# RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
